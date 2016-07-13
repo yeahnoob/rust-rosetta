@@ -1,5 +1,4 @@
 // http://rosettacode.org/wiki/String_concatenation
-
 fn add_world(mut x: String) -> String {
     // world is a &'a[u8]
     let world = " world";
@@ -7,7 +6,6 @@ fn add_world(mut x: String) -> String {
     x
 }
 
-#[cfg(not(test))]
 fn main() {
     // The call to_string() turns a &[u8] into a Vec<u8>.
     // This is done because Vecs are growable but slices aren't.

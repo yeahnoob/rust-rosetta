@@ -1,39 +1,31 @@
-#![feature(unboxed_closures, macro_rules)]
-pub struct G<T, U> {
-    n: T,
+// http://rosettacode.org/wiki/Accumulator_factory
+
+use std::ops::Add;
+
+pub fn accum<'a, T>(mut n: T) -> Box<FnMut(T) -> T + 'a>
+    where T: 'a + Add<T, Output = T> + Copy
+{
+    Box::new(move |i: T| {
+        n = n + i;
+        n
+    })
 }
 
-macro_rules! add_impl(
-    ($($t:ty)*) => ($(
-        impl FnMut<($t,), $t> for G<$t, $t> {
-            extern "rust-call" fn call_mut(&mut self, (i,):($t,)) -> $t {
-                self.n = self.n + i;
-                self.n
-            }
-        }
-    )*)
-);
-
-add_impl!(uint u8 u16 u32 u64 int i8 i16 i32 i64 f32 f64);
-
-pub fn accum<T: Add<T, U>, U>(n: T) -> G<T, U> {
-    G { n: n }
-}
-
-#[cfg(not(test))]
 pub fn main() {
     println!("{}", accumulate());
 }
 
 #[test]
 pub fn test() {
-    assert_eq!(8.3, accumulate());
+    use std::f32;
+
+    assert!((8.3 - accumulate()).abs() < f32::EPSILON);
 }
 
+/// Deviation: works with all types implementing addition, but not a mixture
+/// of types (it is possible to handle mixed types, but would require type
+/// switching at the moment).
 fn accumulate() -> f32 {
-    // Deviation: works with all types implementing addition, but not a mixture
-    // of types (it is possible to handle mixed types, but would require type
-    // switching at the moment).
     let mut g = accum(1f32);
     g(5.);
     accum(3i32);

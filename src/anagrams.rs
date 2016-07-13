@@ -1,25 +1,27 @@
-// Implements http://rosettacode.org/wiki/Anagrams
-#[cfg(not(test))]
-use std::io::{File, BufferedReader};
+// http://rosettacode.org/wiki/Anagrams
 use std::collections::{HashMap, HashSet};
 use std::collections::hash_map::Entry::{Occupied, Vacant};
+use std::fs::File;
+use std::io::BufReader;
+use std::io::prelude::*;
 
 fn sorted_characters(string: &str) -> String {
     let mut chars = string.chars().collect::<Vec<char>>();
     chars.sort();
-    String::from_chars(chars.as_slice())
+    chars.iter().cloned().collect()
 }
 
 /// Returns groups of anagrams where each group consists of a set
 /// containing the words
-fn anagrams<T: Iterator<String>>(mut lines: T) -> HashMap<String, HashSet<String>> {
+fn anagrams<T: Iterator<Item = String>>(lines: T) -> HashMap<String, HashSet<String>> {
     let mut groups = HashMap::new();
 
     // Make groups of words according to the letters they contain
     for line in lines {
         let s = line.trim();
-        let set = match groups.entry(sorted_characters(s)) {
-            Vacant(entry) => entry.set(HashSet::new()), // Insert new set if not found
+        let sorted = sorted_characters(s);
+        let set = match groups.entry(sorted) {
+            Vacant(entry) => entry.insert(HashSet::new()), // Insert new set if not found
             Occupied(entry) => entry.into_mut(),
         };
 
@@ -30,31 +32,32 @@ fn anagrams<T: Iterator<String>>(mut lines: T) -> HashMap<String, HashSet<String
 }
 
 /// Returns the groups of anagrams that contain the most words in them
-fn largest_groups(groups: &HashMap<String, HashSet<String>>)
-                      -> HashMap<String, HashSet<String>> {
-    let max_length = groups.iter().map(|(_, group)| group.len())
-                                  .max().unwrap();
-    groups.iter().filter_map(|(key, group)| {
-        if group.len() == max_length {
-            Some((key.clone(), group.clone()))
-        } else {
-            None
-        }
-    }).collect()
+fn largest_groups(groups: &HashMap<String, HashSet<String>>) -> HashMap<String, HashSet<String>> {
+    let max_length = groups.iter()
+        .map(|(_, group)| group.len())
+        .max()
+        .unwrap();
+    groups.iter()
+        .filter_map(|(key, group)| {
+            if group.len() == max_length {
+                Some((key.clone(), group.clone()))
+            } else {
+                None
+            }
+        })
+        .collect()
 }
 
-#[cfg(not(test))]
-fn main () {
-    let path = Path::new("src/resources/unixdict.txt");
-    let mut reader = BufferedReader::new(File::open(&path));
+fn main() {
+    let reader = BufReader::new(File::open("resources/unixdict.txt").unwrap());
     let lines = reader.lines().map(|l| l.unwrap());
 
     let anagram_groups = anagrams(lines);
     let largest_groups = largest_groups(&anagram_groups);
 
     // Print the words in the largest groups of anagrams
-    for (_, group) in largest_groups.iter() {
-        for word in group.iter() {
+    for group in largest_groups.values() {
+        for word in group {
             print!("{} ", word)
         }
         println!("")
@@ -67,8 +70,7 @@ fn basic_test() {
         s.iter().map(|s| s.to_string()).collect()
     };
 
-    fn assert_has_value(map: &HashMap<String, HashSet<String>>,
-                        set: &HashSet<String>) {
+    fn assert_has_value(map: &HashMap<String, HashSet<String>>, set: &HashSet<String>) {
         assert!(map.values().any(|v| v == set));
     }
 

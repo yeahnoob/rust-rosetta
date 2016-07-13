@@ -1,7 +1,9 @@
-// Implements http://rosettacode.org/wiki/Command-line_arguments
+// http://rosettacode.org/wiki/Command-line_arguments
 
-use std::os;
+use std::env;
 
-fn main(){
-    println!("{}", os::args());
+fn main() {
+    for arg in env::args() {
+        println!("{}", arg);
+    }
 }

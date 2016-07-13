@@ -1,13 +1,17 @@
 // http://rosettacode.org/wiki/Comma_quibbling
+
 fn quibble(seq: &[&str]) -> String {
-    match seq {
-        [] => "{}".to_string(),
-        [word] => format!("{{{}}}", word ),
-        _ => format!("{{{} and {}}}", seq.init().connect(", "), seq.last().unwrap())
+    match seq.len() {
+        0 => "{}".to_string(),
+        1 => format!("{{{}}}", seq[0]),
+        _ => {
+            format!("{{{} and {}}}",
+                    seq[..seq.len() - 1].join(", "),
+                    seq.last().unwrap())
+        }
     }
 }
 
-#[cfg(not(test))]
 fn main() {
     println!("{}", quibble(&[]));
     println!("{}", quibble(&["ABC"]));
@@ -17,8 +21,8 @@ fn main() {
 
 #[test]
 fn output() {
-    assert_eq!(quibble(&[]), "{}".to_string());
-    assert_eq!(quibble(&["ABC"]), "{ABC}".to_string());
-    assert_eq!(quibble(&["ABC", "DEF"]), "{ABC and DEF}".to_string());
-    assert_eq!(quibble(&["ABC", "DEF", "G", "H"]), "{ABC, DEF, G and H}".to_string());
+    assert_eq!(quibble(&[]), "{}");
+    assert_eq!(quibble(&["ABC"]), "{ABC}");
+    assert_eq!(quibble(&["ABC", "DEF"]), "{ABC and DEF}");
+    assert_eq!(quibble(&["ABC", "DEF", "G", "H"]), "{ABC, DEF, G and H}");
 }

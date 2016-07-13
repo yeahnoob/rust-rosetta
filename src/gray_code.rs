@@ -1,27 +1,29 @@
-// Implements http://rosettacode.org/wiki/Gray_code
+// http://rosettacode.org/wiki/Gray_code
 
-// Encode an uint
-fn gray_encode(integer: uint) -> uint {
+/// Encode an usize
+fn gray_encode(integer: usize) -> usize {
     (integer >> 1) ^ integer
 }
 
-// Decode an uint
-fn gray_decode(integer: uint) -> uint {
+/// Decode an usize
+fn gray_decode(integer: usize) -> usize {
     match integer {
         0 => 0,
-        _ => integer ^ gray_decode(integer >> 1)
+        _ => integer ^ gray_decode(integer >> 1),
     }
 }
 
-#[cfg(not(test))]
 fn main() {
-    for i in range(0u,32u) {
-        println!("{:2} {:0>5} {:0>5} {:2}", i, i, gray_encode(i),
-            gray_decode(i));
+    for i in 0..32 {
+        println!("{:2} {:0>5} {:0>5} {:2}",
+                 i,
+                 i,
+                 gray_encode(i),
+                 gray_decode(i));
     }
 }
 
 #[test]
 fn test_coherence() {
-    assert!(range(0u, 1000).all(|x| gray_decode(gray_encode(x)) == x));
+    assert!((0..1000).all(|x| gray_decode(gray_encode(x)) == x));
 }

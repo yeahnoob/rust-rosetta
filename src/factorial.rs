@@ -1,51 +1,49 @@
-// Implements http://rosettacode.org/wiki/Factorial
+// http://rosettacode.org/wiki/Factorial
 
-use std::iter::range_inclusive;
+#![feature(test)]
+extern crate test;
 
-// Calculate the factorial using recursion
-fn factorial_recursive (n: uint) -> uint {
+/// Calculate the factorial using recursion
+fn factorial_recursive(n: usize) -> usize {
     match n {
         0 => 1,
-        _ => n * factorial_recursive(n-1)
+        _ => n * factorial_recursive(n - 1),
     }
 }
 
-// Calculate the factorial using a fold
-fn factorial_iterative(n: uint) -> uint {
-    range_inclusive(1, n).fold(1, |p, t| p * t)
+/// Calculate the factorial using a fold
+fn factorial_iterative(n: usize) -> usize {
+    (1..n + 1).fold(1, |p, t| p * t)
 }
 
-// Calculate the factorial using a for loop
-fn factorial_loop(n: uint) -> uint {
+/// Calculate the factorial using a for loop
+fn factorial_loop(n: usize) -> usize {
     let mut fac = 1;
-    for x in range_inclusive(1, n) {
+    for x in 1..n + 1 {
         fac *= x;
     }
     fac
 }
 
-#[cfg(not(test))]
-fn main () {
-    let fs = vec![("Recursive", factorial_recursive),
-                  ("Iterative", factorial_iterative),
-                  ("Looooooop", factorial_loop)];
-    for (name, f) in fs.into_iter() {
+fn main() {
+    let fs = vec![("Recursive", factorial_recursive as fn(usize) -> usize),
+                  ("Iterative", factorial_iterative as fn(usize) -> usize),
+                  ("Looooooop", factorial_loop as fn(usize) -> usize)];
+    for (name, f) in fs {
         println!("---------\n{}", name);
-        for i in range(1u, 10) {
+        for i in 1..10 {
             println!("{}", f(i))
         }
     }
 }
 
-// Some tests and benchmarks
 #[cfg(test)]
 mod tests {
-    extern crate test;
-    use self::test::Bencher;
     use super::{factorial_recursive, factorial_iterative, factorial_loop};
+    use super::test::{self, Bencher};
 
-    // Tests
-    fn t(f: |uint| -> uint) {
+    /// Tests
+    fn t(f: fn(usize) -> usize) {
         assert_eq!(f(0), 1);
         assert_eq!(f(1), 1);
         assert_eq!(f(2), 2);
@@ -61,17 +59,17 @@ mod tests {
 
     #[test]
     fn test_fac_recursive() {
-        t(factorial_recursive)
+        t(factorial_recursive as fn(usize) -> usize)
     }
 
     #[test]
     fn test_fac_iterative() {
-        t(factorial_iterative)
+        t(factorial_iterative as fn(usize) -> usize)
     }
 
     #[test]
     fn test_fac_loop() {
-        t(factorial_loop)
+        t(factorial_loop as fn(usize) -> usize)
     }
 
     // Benchmarks

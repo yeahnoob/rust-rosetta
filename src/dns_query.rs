@@ -1,35 +1,55 @@
-// Implements http://rosettacode.org/wiki/DNS_query 
+// http://rosettacode.org/wiki/DNS_query
 
-use std::io::net::addrinfo::get_host_addresses;
-use std::io::net::ip::IpAddr;
+#![feature(lookup_host)]
 
-fn get_ips(host: &str) -> Vec<IpAddr> {
-    let mut ips = match get_host_addresses(host) {
-        Ok(ips) => ips,
-        Err(err) => panic!("{}", err)
-    };
+use std::io;
+use std::net::{Ipv4Addr, Ipv6Addr};
 
-    ips.dedup();
-
-    ips
+#[derive(PartialEq)]
+enum Ip {
+    V4(Ipv4Addr),
+    V6(Ipv6Addr),
 }
 
-#[cfg(not(test))]
+fn get_ips(host: &str) -> io::Result<Vec<Ip>> {
+    use std::net::{self, SocketAddr};
+
+    let hosts = try!(net::lookup_host(host));
+    let ips: Vec<_> = hosts.filter_map(|h| {
+            match h {
+                SocketAddr::V4(s_v4) => Some(Ip::V4(*s_v4.ip())),
+                SocketAddr::V6(s_v6) => Some(Ip::V6(*s_v6.ip())),
+            }
+        })
+        .collect();
+    Ok(ips)
+}
+
 fn main() {
-    for ip in get_ips("www.kame.net").iter() {
-        println!("{}", ip);
+    for ip in &(get_ips("www.kame.net").unwrap()) {
+        match *ip {
+            Ip::V4(ip) => println!("ip v4: {}", ip),
+            Ip::V6(ip) => println!("ip v6: {}", ip),
+        }
     }
 }
 
-#[test]
-fn ipv4() {
-    let ip: IpAddr = from_str("203.178.141.194").unwrap();
-    assert!(get_ips("www.kame.net").contains(&ip));
-}
+#[cfg(test)]
+mod tests {
+    use super::{Ip, get_ips};
+    use std::net::{Ipv4Addr, Ipv6Addr};
+    use std::str::FromStr;
 
-#[test]
-#[ignore(cfg(target_os = "win32"))]
-fn ipv6() {
-    let ip: IpAddr = from_str("2001:200:dff:fff1:216:3eff:feb1:44d7").unwrap();
-    assert!(get_ips("www.kame.net").contains(&ip));
+    #[test]
+    fn ipv4() {
+        let ip = Ip::V4(Ipv4Addr::from_str("203.178.141.194").unwrap());
+        assert!(get_ips("www.kame.net").unwrap().contains(&ip));
+    }
+
+    #[test]
+    #[ignore]
+    fn ipv6() {
+        let ip = Ip::V6(Ipv6Addr::from_str("2001:200:dff:fff1:216:3eff:feb1:44d7").unwrap());
+        assert!(get_ips("www.kame.net").unwrap().contains(&ip));
+    }
 }

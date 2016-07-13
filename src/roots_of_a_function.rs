@@ -1,11 +1,18 @@
 // http://rosettacode.org/wiki/Roots_of_a_function
+extern crate num;
 
-use std::num::Float;
+use num::Float;
 
-// Note: We cannot use `range_step` here because Floats don't implement
-// the `CheckedAdd` trait.
-fn find_roots<T: Copy + PartialOrd + Float>(f: |T| -> T, start: T, stop: T,
-                                             step: T, epsilon: T) -> Vec<T> {
+/// Note: We cannot use `range_step` here because Floats don't implement
+/// the `CheckedAdd` trait.
+fn find_roots<T: Copy + PartialOrd + Float, F>(f: F,
+                                               start: T,
+                                               stop: T,
+                                               step: T,
+                                               epsilon: T)
+                                               -> Vec<T>
+    where F: Fn(T) -> T
+{
     let mut ret = vec![];
     let mut current = start;
     while current < stop {
@@ -19,8 +26,11 @@ fn find_roots<T: Copy + PartialOrd + Float>(f: |T| -> T, start: T, stop: T,
 
 #[test]
 fn test_find_roots() {
-    let roots = find_roots(|x: f64| x*x*x - 3.0*x*x + 2.0*x,
-                           -1.0, 3.0, 0.0001, 0.00000001);
+    let roots = find_roots(|x: f64| x * x * x - 3.0 * x * x + 2.0 * x,
+                           -1.0,
+                           3.0,
+                           0.0001,
+                           0.00000001);
     let expected = [0.0f64, 1.0, 2.0];
 
     for (&a, &b) in roots.iter().zip(expected.iter()) {
@@ -28,10 +38,12 @@ fn test_find_roots() {
     }
 }
 
-#[cfg(not(test))]
 fn main() {
-    let roots = find_roots(|x: f64| x*x*x - 3.0*x*x + 2.0*x,
-                           -1.0, 3.0, 0.0001, 0.00000001);
+    let roots = find_roots(|x: f64| x * x * x - 3.0 * x * x + 2.0 * x,
+                           -1.0,
+                           3.0,
+                           0.0001,
+                           0.00000001);
 
-    println!("roots of f(x) = x^3 - 3x^2 + 2x are: {}", roots);
+    println!("roots of f(x) = x^3 - 3x^2 + 2x are: {:?}", roots);
 }

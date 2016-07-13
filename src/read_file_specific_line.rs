@@ -1,28 +1,41 @@
-// Implements http://rosettacode.org/wiki/Read_a_specific_line_from_a_file
-
-use std::io::fs::File;
-use std::io::BufferedReader;
-use std::os::args;
+// http://rosettacode.org/wiki/Read_a_specific_line_from_a_file
+use std::fs::File;
+use std::io::{BufReader, BufRead};
+use std::env::args;
+use std::borrow::ToOwned;
 
 fn main() {
-    match args().len() {
-        2 => panic!("You must enter a filename to read line by line, and a line number"),
-        1 => panic!("You must enter a line number"),
-        _ => {}
-    }
-    let filename = args()[1].clone();
-    let line_number: uint = from_str(args()[2].as_slice()).expect("You must enter an integer as the line number");
+    let mut args = args();
 
-    let file = File::open(&Path::new(filename.as_slice()));
-    let mut reader = BufferedReader::new(file);
+    let filename = {
+        if let Some(o_s) = args.nth(1) {
+            o_s.to_owned()
+        } else {
+            panic!("You must enter a filename to read line by line")
+        }
+    };
 
-    match reader.lines().skip(line_number-1).next() {
+    let line_number = {
+        if let Some(o_s) = args.next() {
+            o_s.to_owned()
+                .parse::<usize>()
+                .expect("You must enter an integer as the line number")
+        } else {
+            panic!("You must enter a filename to read line by line")
+        }
+    };
+
+    let file = File::open(filename).unwrap();
+    let reader = BufReader::new(file);
+
+    match reader.lines().skip(line_number - 1).next() {
         None => panic!("No such line (file is too short)"),
-        Some(result) => match result {
-            // Handle any errors that may arise
-            Ok(ln) => print!("{}", ln),
-            Err(error) => print!("{}", error.desc)
+        Some(result) => {
+            match result {
+                // Handle any errors that may arise
+                Ok(ln) => print!("{}", ln),
+                Err(error) => print!("{}", error),
+            }
         }
     }
 }
-

@@ -1,25 +1,28 @@
-// Implements http://rosettacode.org/wiki/Kahan_summation
+// http://rosettacode.org/wiki/Kahan_summation
+extern crate num;
+extern crate permutohedron;
 
-use std::num::FloatMath;
 use std::f32;
+use num::Float;
+use permutohedron::Heap;
 
 fn find_max(lst: &[f32]) -> Option<f32> {
-    if lst.is_empty() { return None }
-    let max = lst.iter().fold(f32::NEG_INFINITY,
-                              |a, &b| FloatMath::max(a, b));
+    if lst.is_empty() {
+        return None;
+    }
+    let max = lst.iter().fold(f32::NEG_INFINITY, |a, &b| Float::max(a, b));
     Some(max)
 }
 
-fn with_bits(val: f32, digits: uint) -> f32 {
-    let num = std::f32::to_str_digits(val, digits);
-    let res: f32 = from_str(num.as_slice()).unwrap();
-    res
+fn with_bits(val: f32, digits: usize) -> f32 {
+    let num = format!("{:.*}", digits, val);
+    num.parse::<f32>().unwrap()
 }
 
 fn kahan_sum(lst: &[f32]) -> Option<f32> {
     let mut sum = 0.0f32;
     let mut c = 0.0f32;
-    for i in lst.iter() {
+    for i in lst {
         let y = *i - c;
         let t = sum + y;
         c = (t - sum) - y;
@@ -28,41 +31,41 @@ fn kahan_sum(lst: &[f32]) -> Option<f32> {
     Some(with_bits(sum, 1))
 }
 
-
-fn all_sums(vec: &[f32]) -> Vec<f32> {
+fn all_sums(vec: &mut [f32]) -> Vec<f32> {
     let mut res = Vec::new();
-    let mut perms = vec.permutations();
+    let mut perms = Heap::new(vec);
     loop {
         let v = perms.next();
         match v {
-            Some(_v) =>  {
+            Some(v) => {
                 let mut sum = 0.0f32;
-                for e in _v.iter() {
+                for e in &v {
                     sum += with_bits(*e, 1);
                 }
                 res.push(with_bits(sum, 1));
             }
-            None => break
+            None => break,
         }
     }
     res
 }
 
-#[cfg(not(test))]
+#[cfg_attr(feature="clippy", allow(approx_constant))]
 fn main() {
-    let v = [10000.0f32, 3.14159, 2.71828];
-    let sums = all_sums(&v);
-    let res = kahan_sum(v.as_slice()).unwrap();
-    let max = find_max(sums.as_slice()).unwrap();
+    let v = vec![10000.0f32, 3.14159, 2.71828];
+    let sums = all_sums(&mut v.clone());
+    let res = kahan_sum(&v).unwrap();
+    let max = find_max(&sums[..]).unwrap();
     println!("max: {} res: {}", max, res);
 }
 
 #[test]
+#[cfg_attr(feature="clippy", allow(approx_constant))]
 fn test_kahansum() {
-    let v = [10000.0f32, 3.14159, 2.71828];
-    let sums = all_sums(&v);
-    let res = kahan_sum(v.as_slice()).unwrap();
-    let max = find_max(sums.as_slice()).unwrap();
+    let v = vec![10000.0f32, 3.14159, 2.71828];
+    let sums = all_sums(&mut v.clone());
+    let res = kahan_sum(&v).unwrap();
+    let max = find_max(&sums[..]).unwrap();
     assert!(max < res);
 }
 
@@ -70,5 +73,5 @@ fn test_kahansum() {
 fn test_withbits() {
     let v = 3.123345f32;
     let res = with_bits(v, 3);
-    assert!(res == 3.123f32);
+    assert!((res - 3.123f32).abs() < f32::EPSILON);
 }

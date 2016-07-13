@@ -1,16 +1,15 @@
+// http://rosettacode.org/wiki/Huffman_coding
 // Implement data structures for a Huffman encoding tree:
-//   http://rosettacode.org/wiki/Huffman_coding
-
-extern crate core;
 use std::collections::HashMap;
 use std::collections::hash_map::Entry::{Occupied, Vacant};
 use std::collections::BinaryHeap;
+use std::cmp::Ordering;
+use std::cmp::Ordering::{Less, Equal, Greater};
 
-// Each HNode has a weight, representing the sum of the frequencies for all its
-// children. It is either a leaf (containing a character), or a HTree
-// (containing two children)
+/// Each `HNode` has a weight, representing the sum of the frequencies for all its
+/// children. It is either a leaf (containing a character), or an `HTree` (containing two children)
 struct HNode {
-    weight: uint,
+    weight: usize,
     item: HItem,
 }
 
@@ -24,14 +23,14 @@ struct HTreeData {
     right: Box<HNode>,
 }
 
-// Implementing comparison traits (Ord and all its dependencies) such that
-// the HNode with the greatest weight is the smallest in a comparison. Basically
-// reversing all the comparison operators.
+/// Implementing comparison traits (`Ord` and all its dependencies) such that the `HNode` with the
+/// greatest weight is the smallest in a comparison. Basically reversing all the comparison
+/// operators.
 impl Ord for HNode {
     fn cmp(&self, other: &HNode) -> Ordering {
         match self.weight.cmp(&other.weight) {
-            Less    => Greater,
-            Equal   => Equal,
+            Less => Greater,
+            Equal => Equal,
             Greater => Less,
         }
     }
@@ -50,24 +49,28 @@ impl PartialEq for HNode {
     }
 }
 
-// Takes a non-empty string (function will fail if string is empty) and computes
-// the Huffman encoding tree for that string.
+/// Takes a non-empty string (function will fail if string is empty) and computes the Huffman
+/// encoding tree for that string.
 fn huffman_tree(input: &str) -> HNode {
     // 1. Loop through all the characters in that string, adding them to a HashMap
     //    of character to frequency.
     let mut freq = HashMap::new();
     for ch in input.chars() {
         match freq.entry(ch) {
-            Vacant(entry) => { entry.set(1u); },
-            Occupied(mut entry) => { *entry.get_mut() += 1; },
+            Vacant(entry) => {
+                entry.insert(1);
+            }
+            Occupied(mut entry) => {
+                *entry.get_mut() += 1;
+            }
         };
     }
 
     // 2. For each (character, frequency) pair in the HashMap, add a Leaf to a
     //    PriorityQueue
     let mut queue = BinaryHeap::<HNode>::new();
-    for (ch, freq) in freq.iter() {
-        let new_node = HNode{
+    for (ch, freq) in &freq {
+        let new_node = HNode {
             weight: *freq,
             item: HItem::Leaf(*ch),
         };
@@ -83,9 +86,9 @@ fn huffman_tree(input: &str) -> HNode {
         let item2 = queue.pop().unwrap();
         let new_node = HNode {
             weight: item1.weight + item2.weight,
-            item: HItem::Tree(HTreeData{
-                left: box item1,
-                right: box item2,
+            item: HItem::Tree(HTreeData {
+                left: Box::new(item1),
+                right: Box::new(item2),
             }),
         };
         queue.push(new_node);
@@ -93,30 +96,31 @@ fn huffman_tree(input: &str) -> HNode {
     queue.pop().unwrap()
 }
 
-// Takes a Huffman Tree, traverse it and build a table with each character and
-// its encoding string.
-fn build_encoding_table(tree: &HNode,
-                      table: &mut HashMap<char,String>,
-                      start_str: &str) {
+/// Takes a Huffman Tree, traverse it and build a table with each character and
+/// its encoding string.
+fn build_encoding_table(tree: &HNode, table: &mut HashMap<char, String>, start_str: &str) {
     match tree.item {
         HItem::Tree(ref data) => {
-            build_encoding_table(&*data.left, table,
-                               format!("{}0", start_str).as_slice());
-            build_encoding_table(&*data.right, table,
-                               format!("{}1", start_str).as_slice());
-        },
-        HItem::Leaf(ch)   => {table.insert(ch, start_str.to_string());}
+            build_encoding_table(&data.left, table, &format!("{}0", start_str)[..]);
+            build_encoding_table(&data.right, table, &format!("{}1", start_str)[..]);
+        }
+        HItem::Leaf(ch) => {
+            table.insert(ch, start_str.to_string());
+        }
     };
 }
 
-// Attempts to construct a tree, and test that the construction is successful
-//    7
-//   ----
-//  /    \
-// 4:'4'  3
-//      -----
-//     /     \
-//    2:'2'  1:'1'
+/// Attempts to construct a tree, and test that the construction is successful
+///
+/// ```
+///     7
+///    ----
+///   /    \
+///  4:'4'  3
+///       -----
+///      /     \
+///     2:'2'  1:'1'
+/// ```
 #[test]
 fn test_tree_construction() {
     let to_encode = "4444221";
@@ -124,73 +128,75 @@ fn test_tree_construction() {
     assert!(tree.weight == 7);
     let children = match tree.item {
         HItem::Tree(data) => data,
-        HItem::Leaf(_)    => panic!("Tree Missing Children!"),
+        HItem::Leaf(_) => panic!("Tree Missing Children!"),
     };
-    let left  = &children.left;
+    let left = &children.left;
     let right = &children.right;
     assert!(right.weight == 4);
     assert!(left.weight == 3);
     let right_char = match right.item {
-        HItem::Tree(_)  => panic!("Node is not Leaf Node!"),
+        HItem::Tree(_) => panic!("Node is not Leaf Node!"),
         HItem::Leaf(ch) => ch,
     };
     assert!(right_char == '4');
     let children = match left.item {
         HItem::Tree(ref data) => data,
-        HItem::Leaf(_)    => panic!("Tree Missing Children!"),
+        HItem::Leaf(_) => panic!("Tree Missing Children!"),
     };
-    let left  = &children.left;
+    let left = &children.left;
     let right = &children.right;
     let left_char = match left.item {
-        HItem::Tree(_)  => panic!("Node is not Leaf Node!"),
+        HItem::Tree(_) => panic!("Node is not Leaf Node!"),
         HItem::Leaf(ch) => ch,
     };
     let right_char = match right.item {
-        HItem::Tree(_)  => panic!("Node is not Leaf Node!"),
+        HItem::Tree(_) => panic!("Node is not Leaf Node!"),
         HItem::Leaf(ch) => ch,
     };
     match (left.weight, right.weight) {
         (1, 2) => {
             assert!(left_char == '1');
             assert!(right_char == '2');
-        },
+        }
         (2, 1) => {
             assert!(left_char == '2');
             assert!(right_char == '1');
-        },
+        }
         (_, _) => {
             panic!("Incorrect Leaf Nodes");
         }
     };
 }
 
+/// Constructs a table:
+///
+/// ```
+///  '4': 1
+///  '2': 01 OR 00
+///  '1': 00    01
+///  ```
+///
+/// And tests that the table was correctly constructed
 #[test]
-// Constructs a table:
-//  '4': 1
-//  '2': 01 OR 00
-//  '1': 00    01
-// And tests that the table was correctly constructed
 fn test_table_construction() {
     let to_encode = "4444221";
     let tree = huffman_tree(to_encode);
-    let mut table = HashMap::<char,String>::new();
+    let mut table = HashMap::<char, String>::new();
     build_encoding_table(&tree, &mut table, "");
-    let one  = table['1'].as_slice();
-    let two  = table['2'].as_slice();
-    let four = table['4'].as_slice();
+    let one = &*table[&'1'];
+    let two = &*table[&'2'];
+    let four = &*table[&'4'];
     assert!(four == "1");
-    assert!((one == "01" && two == "00") ||
-            (one == "00" && two == "01"));
+    assert!((one == "01" && two == "00") || (one == "00" && two == "01"));
 }
 
-#[cfg(not(test))]
 fn main() {
     let to_encode = "this is an example for huffman encoding";
     let tree = huffman_tree(to_encode);
-    let mut table = HashMap::<char,String>::new();
+    let mut table = HashMap::<char, String>::new();
     build_encoding_table(&tree, &mut table, "");
 
-    for (ch, encoding) in table.iter() {
+    for (ch, encoding) in &table {
         println!("{}: {}", *ch, encoding);
     }
 }

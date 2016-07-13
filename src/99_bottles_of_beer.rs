@@ -1,9 +1,8 @@
-// Implements http://rosettacode.org/wiki/99_Bottles_of_Beer
+// http://rosettacode.org/wiki/99_Bottles_of_Beer
 use std::string::String;
 
-#[cfg(not(test))]
 fn main() {
-    for num_bottles in std::iter::range_inclusive(1u, 99).rev() {
+    for num_bottles in (1u32..100).rev() {
         println!("{}", bottles_line(num_bottles, true));
         println!("{}", bottles_line(num_bottles, false));
         println!("Take one down, pass it around...");
@@ -12,16 +11,17 @@ fn main() {
     }
 }
 
-fn bottles_line(num_bottles: uint, on_the_wall: bool) -> String {
-    let tail = match on_the_wall {
-        true => "of beer on the wall!\n",
-        false => "of beer\n"
+fn bottles_line(num_bottles: u32, on_the_wall: bool) -> String {
+    let tail = if on_the_wall {
+        "of beer on the wall!\n"
+    } else {
+        "of beer\n"
     };
 
     match num_bottles {
         0 => format!("No bottles {}", tail),
         1 => format!("One bottle {}", tail),
-        n => format!("{} bottles {}", n, tail)
+        n => format!("{} bottles {}", n, tail),
     }
 }
 

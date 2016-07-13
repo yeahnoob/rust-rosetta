@@ -1,30 +1,29 @@
-// Implements http://rosettacode.org/wiki/Align_columns
+// http://rosettacode.org/wiki/Align_columns
 
-const TEST_STR: &'static str =
-    "Given$a$text$file$of$many$lines,$where$fields$within$a$line$\nare$delineated\
-    $by$a$single$'dollar'$character,$write$a$program\nthat$aligns$each$column$of\
-    $fields$by$ensuring$that$words$in$each$\ncolumn$are$separated$by$at$least$one\
-    $space.\nFurther,$allow$for$each$word$in$a$column$to$be$either$left$\n\
-    justified,$right$justified,$or$center$justified$within$its$column.\n";
+const TEST_STR: &'static str = r"Given$a$text$file$of$many$lines,$where$fields$within$a$line$
+are$delineated$by$a$single$'dollar'$character,$write$a$program
+that$aligns$each$column$of$fields$by$ensuring$that$words$in$each$
+column$are$separated$by$at$least$one$space.
+Further,$allow$for$each$word$in$a$column$to$be$either$left$
+justified,$right$justified,$or$center$justified$within$its$column.
+";
 
-#[cfg(not(test))]
 fn main() {
     let (chunks, max_lengths) = align_columns(TEST_STR);
     print_aligned_columns(&chunks, &max_lengths);
 }
 
-fn align_columns(text: &str) -> (Vec<Vec<String>>, Vec<uint>) {
+fn align_columns(text: &str) -> (Vec<Vec<String>>, Vec<usize>) {
     let lines: Vec<String> = text.split('\n').map(|s| s.to_string()).collect();
-    let mut max_lengths: Vec<uint> = Vec::new();
+    let mut max_lengths: Vec<usize> = Vec::new();
     let mut chunks: Vec<Vec<String>> = Vec::new();
 
-    for i in range(0u, lines.len()) {
-        let ref input = lines[i];
-        let split_input: Vec<String> = input.as_slice().split('$').map(|s| s.to_string()).collect();
-        chunks.push(split_input.clone());
-        let v: Vec<uint> = split_input.iter().map(|chunk| chunk.len() ).collect();
+    for line in &lines {
+        let split_line: Vec<String> = line.split('$').map(|s| s.to_string()).collect();
+        chunks.push(split_line.clone());
+        let v: Vec<usize> = split_line.iter().map(|chunk| chunk.len()).collect();
 
-        for i in range(0u, v.len()) {
+        for i in 0..v.len() {
             if i < max_lengths.len() {
                 max_lengths[i] = std::cmp::max(max_lengths[i], v[i]);
             } else {
@@ -36,33 +35,32 @@ fn align_columns(text: &str) -> (Vec<Vec<String>>, Vec<uint>) {
     (chunks, max_lengths)
 }
 
-fn print_aligned_columns(chunks: &Vec<Vec<String>>, max_lengths: &Vec<uint>) {
+fn print_aligned_columns(chunks: &[Vec<String>], max_lengths: &[usize]) {
     // left aligned
-    for i in range(0u, chunks.len()) {
-        for j in range(0u, chunks[i].len()) {
-            print!("{0:<1$}", chunks[i][j], 1 + max_lengths[j]);
+    for chunk in chunks {
+        for (i, split) in chunk.iter().enumerate() {
+            print!("{0:<1$}", split, 1 + max_lengths[i]);
         }
         println!("");
     }
     println!("");
     // right aligned
-    for i in range(0u, chunks.len()) {
-        for j in range(0u, chunks[i].len()) {
-            print!("{0:>1$}", chunks[i][j], 1 + max_lengths[j]);
+    for chunk in chunks {
+        for (i, split) in chunk.iter().enumerate() {
+            print!("{0:>1$}", split, 1 + max_lengths[i]);
         }
         println!("");
     }
     println!("");
     // center aligned
-    for i in range(0u, chunks.len()) {
-        for j in range(0u, chunks[i].len()) {
-            let ref string: String = chunks[i][j];
-            let spaces: uint = 1 + max_lengths[j] - string.len();
-            for _ in range(0u, spaces>>1) {
+    for chunk in chunks {
+        for (i, split) in chunk.iter().enumerate() {
+            let spaces: usize = 1 + max_lengths[i] - split.len();
+            for _ in 0..spaces >> 1 {
                 print!(" ");
             }
-            print!("{}", string);
-            for _ in range(0u, spaces - (spaces>>1)) {
+            print!("{}", split);
+            for _ in 0..(spaces - (spaces >> 1)) {
                 print!(" ");
             }
         }
@@ -73,10 +71,10 @@ fn print_aligned_columns(chunks: &Vec<Vec<String>>, max_lengths: &Vec<uint>) {
 #[test]
 fn test_result() {
     let (chunks, max_lengths) = align_columns(TEST_STR);
-    for chunkset in chunks.iter() {
+    for chunkset in &chunks {
         // the number of words in a chunkset is <= the number of values in max_lengths
         assert!(chunkset.len() <= max_lengths.len());
-        for j in range(0u, chunkset.len()) {
+        for j in 0..chunkset.len() {
             // a word in a chunkset cannot be longer than max_lengths
             assert!(chunkset[j].len() <= max_lengths[j]);
         }

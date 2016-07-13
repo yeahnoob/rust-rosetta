@@ -1,22 +1,19 @@
-// Implements http://rosettacode.org/wiki/Rot-13
+// http://rosettacode.org/wiki/Rot-13
 
-fn rot13 (string: &str) -> String {
-    fn rot13u8 (c: char) -> char {
+fn rot13(string: &str) -> String {
+    fn rot13u8(c: char) -> char {
         let d = c as u8;
         match c {
-            'a' ... 'm'
-            | 'A' ... 'M' => (d + 13) as char,
-            'n' ... 'z'
-            | 'N' ... 'Z' => (d - 13) as char,
-            _ => c
+            'a'...'m' | 'A'...'M' => (d + 13) as char,
+            'n'...'z' | 'N'...'Z' => (d - 13) as char,
+            _ => c,
         }
     }
 
     string.chars().map(rot13u8).collect()
 }
 
-#[cfg(not(test))]
-fn main () {
+fn main() {
     let string = "Do you love apples?";
 
     println!("Original: {}", string);
@@ -30,9 +27,11 @@ fn test_basic() {
 
 #[test]
 fn test_coherence() {
-    assert!(range(50000i, 50050).map(|x| format!("{}", x)).all(|s| {
-        let encoded = rot13(s.as_slice());
-        let decoded = rot13(encoded.as_slice());
+    let coherence_test = (50000i32..50050).map(|x| format!("{}", x)).all(|s| {
+        let encoded = rot13(&s[..]);
+        let decoded = rot13(&encoded[..]);
         decoded == s
-    }));
+    });
+
+    assert!(coherence_test);
 }

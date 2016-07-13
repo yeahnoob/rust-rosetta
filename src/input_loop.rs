@@ -1,8 +1,9 @@
-// Implements http://rosettacode.org/wiki/Input_loop
-use std::io;
+// http://rosettacode.org/wiki/Input_loop
+use std::io::{self, BufRead};
 
 fn main() {
-    for line in io::stdin().lock().lines() {
-        print!("{}", line.unwrap());
+    let stdin = io::stdin();
+    for line in stdin.lock().lines() {
+        println!("{}", line.unwrap());
     }
 }

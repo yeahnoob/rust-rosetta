@@ -1,22 +1,27 @@
-// Implements http://rosettacode.org/wiki/Hailstone_sequence
+// http://rosettacode.org/wiki/Hailstone_sequence
 
-// Define a struct which stores the state for the iterator.
+/// Define a struct which stores the state for the iterator.
 struct Hailstone {
-    next: uint, // Accessible only to the current module.
-    pub start: uint  // Publically accessible.
+    next: usize,
+    pub start: usize,
 }
 
 impl Hailstone {
-  // Define a constructor for the struct.
-    fn new(n: uint) -> Hailstone {
-        Hailstone { next: n, start: n }
+    /// Define a constructor for the struct.
+    fn new(n: usize) -> Hailstone {
+        Hailstone {
+            next: n,
+            start: n,
+        }
     }
 }
 
-// Implement the hailstone iteration sequence.
-impl Iterator<uint> for Hailstone {
-    // This gets called to fetch the next item of the iterator.
-    fn next(&mut self) -> Option<uint> {
+/// Implement the hailstone iteration sequence.
+impl Iterator for Hailstone {
+    type Item = usize;
+
+    /// This gets called to fetch the next item of the iterator.
+    fn next(&mut self) -> Option<usize> {
         // We need to cache the current value.
         let current = self.next;
         // And then calculate the 'next'
@@ -24,8 +29,8 @@ impl Iterator<uint> for Hailstone {
             0 => {
                 // Resets the iterator.
                 self.next = self.start;
-                return None
-            },
+                return None;
+            }
             // At the end, yield 1 and roll over next time called.
             1 => 0,
             // Got an even.
@@ -39,22 +44,22 @@ impl Iterator<uint> for Hailstone {
 }
 
 /// Returns the start number and length of the longest hailstone sequence up to `limit`
-fn biggest_hailstone(limit: uint) -> (uint, uint) {
-    range(0u, limit).map(|n| (n, Hailstone::new(n).count()))
-                    .max_by(|&(_, count)| count)
-                    .unwrap()
+fn biggest_hailstone(limit: usize) -> (usize, usize) {
+    (0..limit)
+        .map(|n| (n, Hailstone::new(n).count()))
+        .max_by_key(|&(_, count)| count)
+        .unwrap()
 }
 
-#[cfg(not(test))]
 fn main() {
     // Find the hailstone for 27.
-    let two_seven = Hailstone::new(27).collect::<Vec<uint>>();
+    let two_seven = Hailstone::new(27).collect::<Vec<usize>>();
     let ts_len = two_seven.len();
-    println!("Testing: {}, Length: {}, Values: {}...{}",
-            two_seven[0],
-            ts_len,
-            two_seven.slice(0, 4),
-            two_seven.slice(ts_len - 4, ts_len));
+    println!("Testing: {}, Length: {}, Values: {:?}...{:?}",
+             two_seven[0],
+             ts_len,
+             &two_seven[0..4],
+             &two_seven[ts_len - 4..]);
 
     // Find the longest.
     let (biggest, length) = biggest_hailstone(100000);
@@ -63,10 +68,10 @@ fn main() {
 
 #[test]
 fn test_27() {
-    let seq = Hailstone::new(27).collect::<Vec<uint>>();
+    let seq = Hailstone::new(27).collect::<Vec<usize>>();
 
-    assert_eq!(seq.slice(0, 4), [27, 82, 41, 124]);
-    assert_eq!(seq.slice(seq.len() - 4, seq.len()), [8, 4, 2, 1]);
+    assert_eq!(&seq[0..4], [27, 82, 41, 124]);
+    assert_eq!(&seq[seq.len() - 4..], [8, 4, 2, 1]);
 }
 
 #[test]

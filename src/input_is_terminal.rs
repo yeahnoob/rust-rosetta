@@ -1,7 +1,7 @@
-// Implements http://rosettacode.org/wiki/Check_input_device_is_a_terminal
-
+// http://rosettacode.org/wiki/Check_input_device_is_a_terminal
 extern crate libc;
 
+#[cfg(unix)]
 fn main() {
     let istty = unsafe { libc::isatty(libc::STDIN_FILENO as i32) } != 0;
     if istty {
@@ -9,4 +9,9 @@ fn main() {
     } else {
         println!("stdin is not tty");
     }
+}
+
+#[cfg(not(unix))]
+fn main() {
+    unimplemented!();
 }

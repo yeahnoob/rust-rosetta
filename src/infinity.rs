@@ -1,8 +1,6 @@
-// Implements http://rosettacode.org/wiki/Infinity
-
-use std::num::Float;
+// http://rosettacode.org/wiki/Infinity
 
 fn main() {
-    let inf : f32 = Float::infinity();
+    let inf = ::std::f32::INFINITY;
     println!("{}", inf);
 }

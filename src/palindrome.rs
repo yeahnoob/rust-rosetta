@@ -1,6 +1,7 @@
-// Implements http://rosettacode.org/wiki/Palindrome_detection
+// http://rosettacode.org/wiki/Palindrome_detection
+// http://rosettacode.org/wiki/Test_a_function
 
-// Returns true if the string is a palindrome
+/// Returns true if the string is a palindrome
 fn palindrome(string: &str) -> bool {
     // The first part of the string
     let forward = string.chars().take(string.len() / 2);
@@ -9,18 +10,16 @@ fn palindrome(string: &str) -> bool {
     let reverse = string.chars().rev().take(string.len() / 2);
 
     // We group the two parts of the string in tuples
-    let both_directions = forward.zip(reverse);
+    let mut both_directions = forward.zip(reverse);
 
     // The word is a palindrome if each tuple contains two times
     // the same character
-    both_directions.all(|(a, b)| {a == b})
+    both_directions.all(|(a, b)| a == b)
 }
 
-// Demonstration code
-#[cfg(not(test))]
 fn main() {
     let test_strings = ["nope", "eevee", "lalala", "rust", "lalalal"];
-    for &string in test_strings.iter() {
+    for &string in &test_strings {
         println!("{}: {}", string, palindrome(string));
     }
 }

@@ -1,45 +1,50 @@
-// Implements http://rosettacode.org/wiki/Balanced_brackets
+// http://rosettacode.org/wiki/Balanced_brackets
+
+extern crate rand;
 
 trait Balanced {
     /// Returns true if the brackets are balanced
     fn is_balanced(&self) -> bool;
 }
 
-impl<'a> Balanced for &'a str {
+impl<'a> Balanced for str {
     fn is_balanced(&self) -> bool {
-        let mut count = 0i;
+        let mut count = 0;
 
         for bracket in self.chars() {
             let change = match bracket {
                 '[' => 1,
                 ']' => -1,
-                _ => panic!("Strings should only contain brackets")
+                _ => panic!("Strings should only contain brackets"),
             };
 
             count += change;
-            if count < 0 { return false; }
+            if count < 0 {
+                return false;
+            }
         }
 
         count == 0
     }
 }
 
-// For convenience this delegates to its slice form
-impl Balanced for String {
-    fn is_balanced(&self) -> bool { self.as_slice().is_balanced() }
-}
-
 /// Generates random brackets
-#[cfg(not(test))]
-fn generate_brackets(num: uint) -> String {
-    use std::rand::random;
+fn generate_brackets(num: usize) -> String {
+    use rand::random;
 
-    range(0, num).map(|_| if random() { '[' } else { ']' }).collect()
+    (0..num)
+        .map(|_| {
+            if random() {
+                '['
+            } else {
+                ']'
+            }
+        })
+        .collect()
 }
 
-#[cfg(not(test))]
 fn main() {
-    for i in range (0u, 10) {
+    for i in 0..10 {
         let brackets = generate_brackets(i);
 
         println!("{}    {}", brackets, brackets.is_balanced())

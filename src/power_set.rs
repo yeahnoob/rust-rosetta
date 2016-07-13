@@ -1,17 +1,20 @@
-// Given a set, generate its power set, which is the set of all subsets of that
-// set: http://rosettacode.org/wiki/Power_set
+// http://rosettacode.org/wiki/Power_set
+
+//! Given a set, generate its power set, which is the set of all subsets of that set.
 
 use std::vec::Vec;
-use std::slice::Items;
+use std::slice::Iter;
 
 // If set == {}
 //   return {{}}
 // else if set == {a} U rest
 //   return power_set(rest) U ({a} U each set in power_set(rest))
-fn power_set<'a, T: Clone + 'a>(items: &mut Items<'a,T>) -> Vec<Vec<T>> {
+fn power_set<T>(items: &mut Iter<T>) -> Vec<Vec<T>>
+    where T: Clone
+{
     let mut power = Vec::new();
     match items.next() {
-        None       => power.push(Vec::new()),
+        None => power.push(Vec::new()),
         Some(item) => {
             for mut set in power_set(items).into_iter() {
                 power.push(set.clone());
@@ -25,27 +28,33 @@ fn power_set<'a, T: Clone + 'a>(items: &mut Items<'a,T>) -> Vec<Vec<T>> {
 
 #[test]
 fn test() {
-    let set = Vec::<int>::new();
+    let set = Vec::<i32>::new();
     let power = power_set(&mut set.iter());
-    assert!(power == vec!(vec!()));
+    assert!(power == vec![vec![]]);
 
-    let mut set = Vec::<int>::new();
+    let mut set = Vec::<i32>::new();
     set.push(1);
     set.push(2);
     set.push(3);
     let power = power_set(&mut set.iter());
-    assert!(power == vec!(vec!(), vec!(1), vec!(2), vec!(2, 1),
-                          vec!(3), vec!(3, 1), vec!(3, 2), vec!(3, 2, 1)));
+    assert!(power ==
+            vec![vec![],
+                 vec![1],
+                 vec![2],
+                 vec![2, 1],
+                 vec![3],
+                 vec![3, 1],
+                 vec![3, 2],
+                 vec![3, 2, 1]]);
 }
 
-#[cfg(not(test))]
 fn main() {
-    let mut set = Vec::<int>::new();
+    let mut set = Vec::<i32>::new();
     set.push(1);
     set.push(2);
     set.push(3);
     set.push(4);
     let power = power_set(&mut set.iter());
-    println!("Set      : {}", set);
-    println!("Power Set: {}", power);
+    println!("Set      : {:?}", set);
+    println!("Power Set: {:?}", power);
 }

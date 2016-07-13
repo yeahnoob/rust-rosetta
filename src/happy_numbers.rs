@@ -1,11 +1,6 @@
-// Implements http://rosettacode.org/wiki/Happy_numbers
-extern crate collect;
+// http://rosettacode.org/wiki/Happy_numbers
 
-use collect::TreeSet;
-#[cfg(not(test))]
-use std::iter::count;
-
-fn digits(mut n: uint) -> Vec<uint> {
+fn digits(mut n: usize) -> Vec<usize> {
     let mut ds = vec![];
     if n == 0 {
         return vec![0];
@@ -18,30 +13,30 @@ fn digits(mut n: uint) -> Vec<uint> {
     ds
 }
 
-fn is_happy(mut x: uint) -> bool {
-    let mut past = TreeSet::new();
+fn is_happy(mut x: usize) -> bool {
+    let mut past = Vec::new();
     while x != 1 {
         // Take the sum of the squares of the digits of x
         x = digits(x).iter().fold(0, |a, &b| a + b * b);
 
         // The number is not happy if there is an endless loop
         if past.contains(&x) {
-            return false
+            return false;
         }
 
-        past.insert(x);
+        // past.insert(x);
+        past.push(x);
     }
     true
 }
 
-#[cfg(not(test))]
 fn main() {
     // Print the first 8 happy numbers
-    let v: Vec<uint> = count(1u, 1)
+    let v: Vec<usize> = (1..)
         .filter(|x| is_happy(*x))
         .take(8)
         .collect();
-    println!("{}", v)
+    println!("{:?}", v)
 }
 
 #[test]
@@ -57,8 +52,8 @@ fn test_digits() {
 
 #[test]
 fn test_is_happy() {
-    let happys = [1u, 7, 10, 13, 19, 23, 28, 31, 1607, 1663];
-    let unhappys = [0u, 2, 3, 4, 5, 6, 8, 9, 29, 1662];
+    let happys = [1, 7, 10, 13, 19, 23, 28, 31, 1607, 1663];
+    let unhappys = [0, 2, 3, 4, 5, 6, 8, 9, 29, 1662];
 
     assert!(happys.iter().all(|&n| is_happy(n)));
     assert!(unhappys.iter().all(|&n| !is_happy(n)));

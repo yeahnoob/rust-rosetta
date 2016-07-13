@@ -1,16 +1,15 @@
-// Implements http://rosettacode.org/wiki/Reverse_words_in_a_string
+// http://rosettacode.org/wiki/Reverse_words_in_a_string
 
 fn rev_words(line: &str) -> String {
-    line.words().rev().collect::<Vec<&str>>().connect(" ")
+    line.split_whitespace().rev().collect::<Vec<&str>>().join(" ")
 }
 
 fn rev_words_on_lines(text: &str) -> String {
-     text.lines().map(rev_words).collect::<Vec<String>>().connect("\n")
+    text.lines().map(rev_words).collect::<Vec<String>>().join("\n")
 }
 
-#[cfg(not(test))]
 fn main() {
-    let text = "---------- Ice and Fire ------------
+    let text = r"---------- Ice and Fire ------------
 
 fire, in end will world the say Some
 ice. in say Some
@@ -35,7 +34,7 @@ fn test_rev_words() {
                  ("cat     dog", "dog cat"),
                  ("cat dog frog", "frog dog cat")];
 
-    for &(input, expected) in tests.iter() {
+    for &(input, expected) in &tests {
         let output = rev_words(input);
         assert_eq!(expected, output);
     }
@@ -58,7 +57,7 @@ fn test_rev_words_on_lines() {
                  ("a b\nb a", "b a\na b"),
                  ("a b\nc d\ne f", "b a\nd c\nf e")];
 
-    for &(input, expected) in tests.iter() {
+    for &(input, expected) in &tests {
         let output = rev_words_on_lines(input);
         assert_eq!(expected, output);
     }

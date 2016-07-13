@@ -1,34 +1,34 @@
-// Implements http://rosettacode.org/wiki/Sieve_of_Eratosthenes
+// http://rosettacode.org/wiki/Sieve_of_Eratosthenes
+#![feature(step_by)]
 
-use std::iter::{range_inclusive, range_step};
-use std::num::Float;
+use std::iter::repeat;
 
-fn int_sqrt(n: uint) -> uint {
-    (n as f64).sqrt() as uint
+fn int_sqrt(n: usize) -> usize {
+    (n as f64).sqrt() as usize
 }
 
-// Return the prime numbers up to limit
-fn simple_sieve(limit: uint) -> Vec<uint> {
+/// Return the prime numbers up to limit
+#[cfg_attr(feature="clippy", allow(needless_range_loop))]
+fn simple_sieve(limit: usize) -> Vec<usize> {
     if limit < 2 {
-        return vec!();
+        return vec![];
     }
 
-    let mut primes = Vec::from_elem(limit + 1, true);
+    let mut primes: Vec<bool> = repeat(true).take(limit + 1).collect();
 
-    for prime in range_inclusive(2, int_sqrt(limit) + 1) {
+    for prime in 2..(int_sqrt(limit) + 1) {
         if primes[prime] {
-            for multiple in range_step(prime * prime, limit + 1, prime) {
+            for multiple in (prime * prime..limit + 1).step_by(prime) {
                 primes[multiple] = false
             }
         }
     }
 
-    range_inclusive(2, limit).filter(|&n| primes[n]).collect()
+    (2..limit + 1).filter(|&n| primes[n]).collect()
 }
 
-#[cfg(not(test))]
 fn main() {
-    println!("{}", simple_sieve(100))
+    println!("{:?}", simple_sieve(100))
 }
 
 #[test]

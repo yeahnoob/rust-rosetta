@@ -1,15 +1,15 @@
-// Implements http://rosettacode.org/wiki/Pascal%27s_triangle
+// http://rosettacode.org/wiki/Pascal's_triangle
 
-fn pascaltriangle(rows: uint) -> Vec<Vec<uint>> {
+fn pascaltriangle(rows: usize) -> Vec<Vec<usize>> {
     let mut all_rows = Vec::with_capacity(rows);
 
-    for row in range(0, rows) {
+    for row in 0..rows {
         let mut row_vals = Vec::with_capacity(row + 1);
         let mut value = 1;
 
-        for col in range(0, row + 1) {
+        for col in 0..row + 1 {
             row_vals.push(value);
-            value = value * (row - col)/(col + 1)
+            value = value * (row - col) / (col + 1)
         }
 
         all_rows.push(row_vals);
@@ -18,11 +18,10 @@ fn pascaltriangle(rows: uint) -> Vec<Vec<uint>> {
     all_rows
 }
 
-#[cfg(not(test))]
-fn printpascal(rows: &Vec<Vec<uint>>) {
+fn printpascal(rows: &[Vec<usize>]) {
     let mut i = 0;
     for row in rows.iter() {
-        for _ in range(0, (rows.len() - i)) {
+        for _ in 0..(rows.len() - i) {
             print!(" ");
         }
 
@@ -36,18 +35,12 @@ fn printpascal(rows: &Vec<Vec<uint>>) {
     }
 }
 
-#[cfg(not(test))]
 fn main() {
     printpascal(&pascaltriangle(5));
 }
 
 #[test]
 fn test_triangle() {
-    assert_eq!(pascaltriangle(5), vec!(
-                  vec!(1),
-                 vec!(1, 1),
-               vec!(1, 2, 1),
-              vec!(1, 3, 3, 1),
-             vec!(1, 4, 6, 4, 1)
-            ));
+    assert_eq!(pascaltriangle(5),
+               vec![vec![1], vec![1, 1], vec![1, 2, 1], vec![1, 3, 3, 1], vec![1, 4, 6, 4, 1]]);
 }

@@ -1,6 +1,7 @@
-// Implements http://rosettacode.org/wiki/Find_limit_of_recursion
+// http://rosettacode.org/wiki/Find_limit_of_recursion
+#[allow(unconditional_recursion)]
 
-fn recursion(n: int) {
+fn recursion(n: i32) {
     println!("deep: {}", n);
     recursion(n + 1);
 }

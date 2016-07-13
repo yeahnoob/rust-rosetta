@@ -1,16 +1,19 @@
-// Implements http://rosettacode.org/wiki/A%2BB
-
-use std::io::stdio;
+// http://rosettacode.org/wiki/A+B
+use std::io;
 
 fn main() {
-    let input = stdio::stdin().read_line().unwrap();
-    let words = input.words().take(2)
-                            .map(from_str::<int>)
-                            .collect::<Vec<Option<int>>>();
+    let mut input = String::new();
+    let _ = io::stdin().read_line(&mut input).unwrap();
+    let words = input.split_whitespace()
+        .take(2)
+        .map(|i| i.parse::<i32>().ok())
+        .collect::<Vec<Option<i32>>>();
 
-    let sum = match words.as_slice() {
-        [Some(x), Some(y)] => x + y,
-            _ => panic!("Please enter 2 integers")
+    let err_msg = "Please enter 2 integers";
+    let sum = if words.len() == 2 {
+        words[0].expect(err_msg) + words[1].expect(err_msg)
+    } else {
+        panic!(err_msg);
     };
 
     println!("{}", sum);
